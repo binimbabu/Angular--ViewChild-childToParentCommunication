@@ -1,27 +1,94 @@
-# ViewChildChildToParentCommunication
+View child with  child to parent communication
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.8.
+transmit data from  child to parent component using @ViewChild ( here child to parent  communication done without using @Output rather using @ViewChild)
 
-## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+child.component.ts
 
-## Code scaffolding
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+export class ChildComponent {
+title: string = 'Child data';
+}
 
-## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+child.component.html
 
-## Running unit tests
+{{title}}
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-## Running end-to-end tests
+app.component.ts
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+export class AppComponent {
+  @ViewChild('childRef') childRefElement! : ChildComponent; // ElementRef of type can also be given,ChildComponent given here because it refers to ChildComponent 
 
-## Further help
+  changeChildTitle(){
+    this.childRefElement.title = "Updated child title from parent";
+  }
+}
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+Since the childRefElement is declared of type ChildComponent, childRefElement variable will have access to all variables and method declared in child.component.ts. In this piece of code  ' this.childRefElement.title = "Updated child title from parent"; ' we are updating the title value from parent component ts as "Updated child title from parent" from child.component.ts value for title ' title: string = 'Child data'; '
+
+
+
+app.component.html
+
+<h1>View child with components</h1>
+<app-child #childRef></app-child>
+<button (click)="changeChildTitle()">Change Child Title</button>
+
+
+ngOnChanges lifecycle hook cannot be used in child.component.ts because @Input is not used in child.component.ts for parent to child communication rather we are using here @ViewChild.
+
+Another example
+
+child.component.ts
+
+export class ChildComponent {
+  title: string = 'Child data';
+  childData(titleChange: string) {
+    this.title = titleChange;
+  }
+}
+
+
+child.component.html
+
+<div>
+    <p>{{title}}</p>
+</div>
+
+
+
+app.component.html
+
+
+<h1>View child with components</h1>
+<app-child #childRef></app-child>
+<input type="text" [(ngModel)]="childAccessMethodModel"/>
+<button (click)="accessChildMethod()">Access child methods</button>
+<br>
+<button (click)="changeChildTitle()">Change Child Title</button>
+
+
+app.component.ts
+
+
+export class AppComponent {
+  childAccessMethodModel!: string;
+  @ViewChild('childRef') childRefElement!: ChildComponent; // ElementRef of type can also be given,ChildComponent given here because it refers to ChildComponent 
+
+  changeChildTitle() {
+    this.childRefElement.title = "Updated child title from parent";
+  }
+
+  accessChildMethod() {
+    this.childRefElement.childData(this.childAccessMethodModel);
+  }
+}
+
+
+Here childRefElement in parent component that is app.component.ts (this.childRefElement.childData(this.childAccessMethodModel); ) accessing childData method from child component.ts
+
+If we are making title as private in child.scomponent.ts (i,e. private title: string = 'Child data';) then childRefElement in parent component (app.component.ts) cannot access the 'title' in app.component.ts (here parent component) because title declared as private.
+But if we give title private (i,e. private title: string = 'Child data';) and declaring childRefElement of type any ( i.e  @ViewChild('childRef') childRefElement!: any; ) then childRefElement ( this.childRefElement.title = "Updated child title from parent";) can access 'title' in child.component.ts even if its declared private ( Since childRefElement is declared any instead of ChildComponent) .
